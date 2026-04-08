@@ -23,7 +23,8 @@ export default function RootPage() {
 	});
 
 	const isLoading = query.isLoading;
-	console.log(isLoading && "loading...");
+
+	if (isLoading) console.log("loading...");
 
 	return (
 		<main className="min-h-screen bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-8 text-slate-100 sm:px-6 sm:py-10">
