@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getHeroBySlug } from "@/lib/hero";
 import type { HeroSchema } from "@/schemas/hero";
+import { FavoriteButton } from "@/components/providers/favorite";
 
 interface Params {
 	slug: string;
@@ -78,6 +79,7 @@ export default async function RootPage({ params }: Props) {
 							<span className="inline-flex rounded-full border border-indigo-300/30 bg-indigo-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-200">
 								Hero Profile
 							</span>
+							<FavoriteButton heroId={hero.id} heroName={hero.name} />
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">
 									{hero.name}

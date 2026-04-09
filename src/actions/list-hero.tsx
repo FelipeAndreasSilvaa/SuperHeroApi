@@ -3,6 +3,7 @@
 import { getAllHeroes } from "@/lib/hero";
 import type { HeroSchema } from "@/schemas/hero";
 
+
 export interface Pagination {
 	page?: number;
 	limit?: number;
@@ -17,39 +18,55 @@ interface Params {
 	options?: Options;
 }
 
+interface ListHeroResponse {
+	data: HeroSchema[];
+	total: number;
+	page: number;
+	totalPages: number;
+}
+
 export async function listHeroAction({
 	options,
-}: Params): Promise<HeroSchema[]> {
+}: Params): Promise<ListHeroResponse> {
 	const allHeroes = await getAllHeroes();
+
 	const searchTerm = normalizeSearch(options?.search ?? "");
 
 	const filteredHeroes = allHeroes
-		.sort((a, b) => a.name.localeCompare(b.name))
-		.filter((hero) => {
-			if (!searchTerm) return true;
+    .filter((hero) => {
+        if (!searchTerm) return true;
 
-			const searchableFields = [
-				hero.name,
-				hero.biography.fullName,
-				hero.biography.alterEgos,
-				...hero.biography.aliases,
-			]
-				.map(normalizeValue)
-				.filter(Boolean);
+        return normalizeValue(hero.name)
+            .split(" ")
+            .some((word) => word.startsWith(searchTerm));
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-			return searchableFields.some((field) => field.includes(searchTerm));
-		});
-
-	// if pagination is provided, slice the heroes
-	if (options?.pagination) {
-		return filteredHeroes.slice(
-			(options.pagination.page ?? 1 - 1) * (options.pagination.limit ?? 10),
-			(options.pagination.page ?? 1) * (options.pagination.limit ?? 10),
-		);
+	if (!options?.pagination) {
+		return {
+			data: filteredHeroes,
+			total: filteredHeroes.length,
+			page: 1,
+			totalPages: 1,
+		};
 	}
 
-	return filteredHeroes;
+	const page = options.pagination.page ?? 1;
+	const limit = options.pagination.limit ?? 10;
+
+	const start = (page - 1) * limit;
+	const end = page * limit;
+
+	const paginatedHeroes = filteredHeroes.slice(start, end);
+
+	return {
+		data: paginatedHeroes,
+		total: filteredHeroes.length,
+		page,
+		totalPages: Math.ceil(filteredHeroes.length / limit),
+	};
 }
+
 
 function normalizeSearch(value?: string): string {
 	if (!value) return "";
