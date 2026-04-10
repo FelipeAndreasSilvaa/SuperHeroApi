@@ -1,98 +1,63 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { listHeroAction } from "@/actions/list-hero";
-import { useEffect } from "react";
-import { HeroSchema } from "@/schemas/hero";
+import { useState, useEffect } from "react";
+
+import { useFavorites } from "@/hooks/useFavorites";
+import { useCompare } from "@/hooks/useCompare";
+import { useHeroes } from "@/hooks/useHeroes";
+import { useSearchParams } from "next/navigation";
 
 type SortKey = "name" | "alignment" | "publisher";
 
 export default function RootPage() {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState<string>("");
-
-  const [showFavorites, setShowFavorites] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-
-  const [publisherFilter, setPublisherFilter] = useState<string>("");
-
-  const [compare, setCompare] = useState<HeroSchema[]>([]);
-
-  const query = useQuery({
-    queryKey: ["heroes", page, limit, search, showFavorites],
-    queryFn: () =>
-      listHeroAction({
-        options: {
-          pagination: showFavorites ? undefined : { page, limit },
-          search, 
-        },
-      }),
-    placeholderData: (previousData) => previousData,
+  const [state, setState] = useState({
+    page: 1,
+    limit: 10,
+    searchInput: "",
+    search: "",
+    showFavorites: false,
+    publisher: "",
+    sort: "name" as SortKey,
   });
+
+  const { favorites } = useFavorites();
+  const { compare, toggle, clear, isComparing } = useCompare();
+  const { data, isLoading, heroes } = useHeroes(state, favorites);
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setPage(1);
-      setSearch(searchInput);
+      setState((s) => ({
+        ...s,
+        search: s.searchInput,
+        page: 1,
+      }));
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [searchInput]);
+  }, [state.searchInput]);
 
   useEffect(() => {
-    const updateFavorites = () => {
-      const stored = JSON.parse(localStorage.getItem("favorites") ?? "[]") as number[];
-      setFavoriteIds(stored);
-    };
+    const fav = searchParams.get("favorites");
   
-    updateFavorites();
-  
-    window.addEventListener("favoritesUpdated", updateFavorites);
-  
-    return () => {
-      window.removeEventListener("favoritesUpdated", updateFavorites);
-    };
-  }, []);
+    if (fav === "true") {
+      setState((s) => ({
+        ...s,
+        showFavorites: true,
+      }));
+    }
+  }, [searchParams]);
 
-  if (query.isLoading && !query.data) {
+  if (isLoading && !data) {
     return <p className="text-center mt-10">Loading...</p>;
   }
 
-  if (!query.data) {
+  if (!data) {
     return <p className="text-center mt-10">No data</p>;
   }
-
-  const data = query.data;
-
-  const sortedData = [...data.data].sort((a, b) => {
-    if (sortKey === "name") return a.name.localeCompare(b.name);
-    if (sortKey === "alignment")
-      return a.biography.alignment.localeCompare(b.biography.alignment);
-    if (sortKey === "publisher")
-      return (a.biography.publisher ?? "").localeCompare(
-        b.biography.publisher ?? ""
-      );
-    return 0;
-  });
-
-  const displayData = sortedData
-    .filter((hero) =>
-      showFavorites ? favoriteIds.includes(hero.id) : true
-    )
-    .filter((hero) => {
-      if (!publisherFilter) return true;
-      return hero.biography.publisher === publisherFilter;
-    });
-
-
-    const compareHeroes = compare;
 
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-8 text-slate-100 sm:px-6 sm:py-10">
@@ -114,38 +79,49 @@ export default function RootPage() {
             <input
               className="w-full rounded-lg bg-slate-800 p-2"
               placeholder="Buscar herói..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              value={state.searchInput}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  searchInput: e.target.value,
+                }))
+              }
             />
 
             <button
-              onClick={() => {
-                setShowFavorites((prev) => !prev);
-                setPage(1);
-                setPublisherFilter("");
-              }}
+              onClick={() =>
+                setState((s) => ({
+                  ...s,
+                  showFavorites: !s.showFavorites,
+                  page: 1,
+                  publisher: "",
+                }))
+              }
               className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition whitespace-nowrap
                 ${
-                  showFavorites
+                  state.showFavorites
                     ? "border-yellow-400/50 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
                     : "border-slate-700 bg-slate-800 text-slate-300 hover:border-yellow-400/30 hover:text-yellow-300"
                 }`}
             >
-              {showFavorites ? "★" : "☆"} Favorites
-              {favoriteIds.length > 0 && (
+              {state.showFavorites ? "★" : "☆"} Favorites
+              {favorites.length > 0 && (
                 <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-xs text-yellow-300">
-                  {favoriteIds.length}
+                  {favorites.length}
                 </span>
               )}
             </button>
 
             <select
               className="rounded-lg bg-slate-800 p-2 text-slate-300"
-              value={publisherFilter}
-              onChange={(e) => {
-                setPage(1);
-                setPublisherFilter(e.target.value);
-              }}
+              value={state.publisher}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  publisher: e.target.value,
+                  page: 1,
+                }))
+              }
             >
               <option value="">All Publishers</option>
               <option value="Marvel Comics">Marvel</option>
@@ -154,8 +130,13 @@ export default function RootPage() {
 
             <select
               className="rounded-lg bg-slate-800 p-2 text-slate-300"
-              value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              value={state.sort}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  sort: e.target.value as SortKey,
+                }))
+              }
             >
               <option value="name">Name</option>
               <option value="alignment">Alignment</option>
@@ -164,8 +145,13 @@ export default function RootPage() {
 
             <select
               className="rounded-lg bg-slate-800 p-2"
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              value={state.limit}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  limit: Number(e.target.value),
+                }))
+              }
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -174,12 +160,12 @@ export default function RootPage() {
           </div>
         </header>
 
-        {compareHeroes.length === 2 && (
+        {compare.length === 2 && (
           <div className="bg-slate-800 p-4 rounded-xl">
             <h2 className="text-lg font-bold mb-4">Comparação de Heróis</h2>
 
             <div className="grid grid-cols-2 gap-4">
-              {compareHeroes.map((hero) => (
+              {compare.map((hero) => (
                 <div key={hero.id} className="bg-slate-900 p-4 rounded">
                   <p className="font-semibold">{hero.name}</p>
 
@@ -193,20 +179,17 @@ export default function RootPage() {
               ))}
             </div>
 
-            <button
-              onClick={() => setCompare([])}
-              className="mt-3 text-red-400"
-            >
+            <button onClick={clear} className="mt-3 text-red-400">
               Limpar comparação
             </button>
           </div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {displayData.map((hero) => (
+          {heroes.map((hero) => (
             <Link
               key={hero.id}
-              href={`/hero/${hero.slug}`}
+              href={`/hero/${hero.slug}?favorites=${state.showFavorites}`}
               className="group rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-lg transition hover:border-indigo-400/40 hover:bg-slate-900"
             >
               <div className="flex items-center gap-3">
@@ -225,6 +208,7 @@ export default function RootPage() {
                   <p className="text-xs text-slate-400">ID: {hero.id}</p>
                 </div>
               </div>
+
 
               <div className="mt-4 space-y-1 text-sm text-slate-300">
                 <p className="truncate">
@@ -246,58 +230,65 @@ export default function RootPage() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  setCompare((prev) => {
-                    if (prev.some((h) => h.id === hero.id)) {
-                      return prev.filter((h) => h.id !== hero.id);
-                    }
-                    if (prev.length >= 2) return prev;
-                    return [...prev, hero];
-                  });
+                  toggle(hero);
                 }}
                 className={`mt-3 w-full rounded-lg border px-3 py-2 text-xs font-medium transition-all duration-200
-                ${
-                   compare.some((h) => h.id === hero.id) 
-                    ? "border-red-400/40 bg-red-400/10 text-red-300 hover:bg-red-400/20"
-                    : "border-indigo-400/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-400"
-                }`}
+             ${
+               isComparing(hero.id)
+                 ? "border-red-400/40 bg-red-400/10 text-red-300 hover:bg-red-400/20"
+                 : "border-indigo-400/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-400"
+             }`}
               >
-                { compare.some((h) => h.id === hero.id) 
-                  ? "Remover da comparação"
-                  : "Comparar"}
+                {isComparing(hero.id) ? "Remover da comparação" : "Comparar"}
               </button>
             </Link>
           ))}
         </div>
 
-        {!showFavorites && (
+
+        {!state.showFavorites && (
           <>
             <p className="text-center text-sm text-slate-400 mt-4">
-              Mostrando {(page - 1) * limit + 1}–
-              {Math.min(page * limit, data.total)} de {data.total} heróis
+              Mostrando {(state.page - 1) * state.limit + 1}–
+              {Math.min(state.page * state.limit, data.total)} de {data.total}{" "}
+              heróis
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 pt-4">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    page: Math.max(1, s.page - 1),
+                  }))
+                }
+                disabled={state.page === 1}
               >
                 ←
               </button>
 
               {Array.from({ length: data.totalPages }, (_, i) => i + 1)
                 .slice(
-                  Math.max(0, page - 3),
-                  Math.min(data.totalPages, page + 2)
+                  Math.max(0, state.page - 3),
+                  Math.min(data.totalPages, state.page + 2)
                 )
                 .map((p) => (
-                  <button key={p} onClick={() => setPage(p)}>
+                  <button
+                    key={p}
+                    onClick={() => setState((s) => ({ ...s, page: p }))}
+                  >
                     {p}
                   </button>
                 ))}
 
               <button
-                onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                disabled={page === data.totalPages}
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    page: Math.min(data.totalPages, s.page + 1),
+                  }))
+                }
+                disabled={state.page === data.totalPages}
               >
                 →
               </button>

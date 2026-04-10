@@ -11,10 +11,16 @@ interface Params {
 
 interface Props {
 	params: Promise<Params>;
+	searchParams: Promise<{ favorites?: string }>;
 }
 
-export default async function RootPage({ params }: Props) {
+export default async function RootPage({ params, searchParams }: Props) {
 	const { slug } = await params;
+	const { favorites } = await searchParams;
+
+	const isFromFavorites = String(favorites) === "true";
+
+	
 
 	const hero = await getHeroBySlug(slug);
 	if (!hero) return notFound();
@@ -61,7 +67,7 @@ export default async function RootPage({ params }: Props) {
 		<main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6 sm:py-10">
 			<section className="mx-auto w-full max-w-6xl space-y-5 sm:space-y-6">
 				<Link
-					href="/"
+					 href={isFromFavorites ? "/?favorites=true" : "/"}
 					className="inline-flex items-center rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-200 transition hover:border-indigo-300/40 hover:text-white"
 				>
 					&larr; Back to heroes
