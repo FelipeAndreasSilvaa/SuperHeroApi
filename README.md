@@ -229,6 +229,33 @@ Melhor legibilidade
 Destaque visual mais claro
 Experiência mais consistente entre temas
 
+### 11. Testes automatizados
+
+Foram implementados testes automatizados utilizando Vitest, com foco nas principais regras de negócio da aplicação.
+
+Os testes cobrem funcionalidades críticas como:
+
+* Lógica de favoritos (adição, remoção e persistência no localStorage)
+* Paginação (controle de páginas e limites de itens exibidos)
+* Ordenação (por nome e ID, incluindo direção ascendente e descendente)
+
+A abordagem foi focada em testar a lógica da aplicação de forma isolada, garantindo maior confiabilidade e facilitando futuras manutenções.
+
+Os testes foram organizados em arquivos separados dentro da pasta `src/tests/`.
+
+**Como testar:**
+
+1. Execute o comando:
+
+```bash
+npm run test
+```
+
+2. O terminal exibirá os testes sendo executados e seus resultados.
+
+3. Todos os testes devem passar, indicando que as funcionalidades principais estão funcionando corretamente.
+
+
 ---
 
 ### Comparação entre heróis 
