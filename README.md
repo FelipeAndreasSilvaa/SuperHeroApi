@@ -169,7 +169,7 @@ Comparação exibida automaticamente
 src/
 ├── actions/
 │   └── list-hero.ts         # Server Action com lógica de paginação, busca e filtro
-├── app/
+├── app
 │   ├── hero/[slug]/
 │   │   └── page.tsx         # Página de perfil do herói
 │   ├── layout.tsx
@@ -177,7 +177,11 @@ src/
 ├── components/
 │   └── providers/
 │       ├── favorite.tsx     # Botão de favorito (Client Component)
-│       └── query.tsx        # Provider do React Query
+│       └── query.tsx       # Provider do React Query
+├── hooks/                  # 👈 NOVO
+│   ├── useHeroes.ts        # hook de listagem + filtros + react-query
+│   ├── useFavorites.ts     # hook de favoritos (localStorage)
+│   └── useCompare.ts       # hook de comparação
 ├── lib/
 │   └── hero.ts              # Funções utilitárias de acesso aos dados
 ├── schemas/
