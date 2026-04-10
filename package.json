@@ -7,13 +7,19 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "vitest"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Fattor-Tech/SuperHeroApi.git"
 	},
-	"keywords": ["nextjs", "tailwindcss", "react", "typescript", "superhero"],
+	"keywords": [
+		"nextjs",
+		"tailwindcss",
+		"react",
+		"typescript",
+		"superhero"
+	],
 	"author": "Ryan Gomes Martins",
 	"license": "MIT",
 	"type": "module",
@@ -23,10 +29,14 @@
 	"homepage": "https://github.com/Fattor-Tech/SuperHeroApi#readme",
 	"devDependencies": {
 		"@biomejs/biome": "2.4.10",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.2",
 		"@types/node": "^25.5.2",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
-		"typescript": "^6.0.2"
+		"jsdom": "^29.0.2",
+		"typescript": "^6.0.2",
+		"vitest": "^4.1.4"
 	},
 	"dependencies": {
 		"@tailwindcss/postcss": "^4.2.2",
