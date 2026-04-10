@@ -147,6 +147,70 @@ O botão também exibe um contador com o total de favoritos salvos (ex: `★ Fav
 
 **Como testar:** Favorite alguns heróis pelo perfil, volte à listagem e clique em "Favorites" — apenas os heróis favoritados aparecerão.
 
+### 7. Modo escuro (Dark Mode)
+
+Foi implementado suporte a tema claro e escuro com persistência no navegador.
+
+O tema é controlado via classe dark aplicada no elemento <html>, e a preferência do usuário é salva no localStorage, garantindo que o tema escolhido seja mantido mesmo após recarregar a página.
+
+O botão de alternância de tema está disponível na barra de filtros.
+
+Funcionalidades:
+
+Alternância entre modo claro e escuro
+Persistência da escolha do usuário
+Aplicação global do tema
+Compatibilidade com Tailwind CSS v4
+
+**Como testar:** Clique no botão "🌙 Dark / ☀️ Light" no topo da página e recarregue o navegador — o tema permanecerá o mesmo.
+
+### 8. Responsividade da interface
+
+A interface foi adaptada para funcionar corretamente em diferentes tamanhos de tela, principalmente em dispositivos móveis.
+
+Os elementos da barra de filtros foram reorganizados para se ajustarem dinamicamente:
+
+Em telas pequenas, os controles ficam em coluna
+Em telas maiores, são exibidos em linha
+
+Melhorias aplicadas:
+
+Uso de flex-col e sm:flex-row
+Inputs e botões com w-full no mobile
+Layout fluido e adaptável
+
+**Como testar:**  Reduza o tamanho da tela do navegador ou utilize o modo responsivo do DevTools.
+
+### 9. Melhorias visuais (UI/UX)
+
+Foi realizado um refinamento visual geral da interface, com foco em consistência, contraste e experiência do usuário.
+
+Melhorias aplicadas:
+
+Ajuste de cores para melhor contraste em light/dark mode
+Padronização de botões, inputs e selects
+Adição de sombras (shadow-sm, hover:shadow-lg)
+Melhor feedback visual em hover e estados ativos
+Uso de cores mais suaves (evitando preto puro)
+
+Essas melhorias tornam a interface mais próxima de aplicações modernas como GitHub e Vercel.
+
+### 10. Ajuste de contraste no modo claro
+
+Alguns elementos que funcionavam bem no modo escuro apresentavam baixo contraste no modo claro, especialmente o botão de favoritos e o contador.
+
+Foram feitas adaptações específicas para o tema claro:
+
+Botão de favoritos com fundo amarelo claro quando ativo
+Texto com maior contraste (text-yellow-700)
+Badge de contagem com cores ajustadas (bg-yellow-200)
+
+Resultado:
+
+Melhor legibilidade
+Destaque visual mais claro
+Experiência mais consistente entre temas
+
 ---
 
 ### Comparação entre heróis 
@@ -168,25 +232,30 @@ Comparação exibida automaticamente
 ```
 src/
 ├── actions/
-│   └── list-hero.ts         # Server Action com lógica de paginação, busca e filtro
-├── app
-│   ├── hero/[slug]/
-│   │   └── page.tsx         # Página de perfil do herói
+│   └── list-hero.ts
+├── app/
+│   ├── hero/
+│   │   └── [slug]/
+│   │       └── page.tsx
 │   ├── layout.tsx
-│   └── page.tsx             # Página principal com listagem
+│   └── page.tsx
+├── assets/
 ├── components/
-│   └── providers/
-│       ├── favorite.tsx     # Botão de favorito (Client Component)
-│       └── query.tsx       # Provider do React Query
-├── hooks/                  # 👈 NOVO
-│   ├── useHeroes.ts        # hook de listagem + filtros + react-query
-│   ├── useFavorites.ts     # hook de favoritos (localStorage)
-│   └── useCompare.ts       # hook de comparação
+│   ├── providers/
+│   │   ├── favorite.tsx
+│   │   └── query.tsx
+│   └── ui/
+│       └── HeroCardSkeleton.tsx
+├── hooks/
+│   ├── useCompare.ts
+│   ├── useFavorites.ts
+│   ├── useHeroes.ts
+│   └── useTheme.ts
 ├── lib/
-│   └── hero.ts              # Funções utilitárias de acesso aos dados
 ├── schemas/
-│   └── hero.ts              # Schema Zod do herói
 └── styles/
+    └── globals.css
+
 ```
 
 ---

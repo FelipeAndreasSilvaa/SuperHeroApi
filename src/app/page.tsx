@@ -9,6 +9,9 @@ import { useCompare } from "@/hooks/useCompare";
 import { useHeroes } from "@/hooks/useHeroes";
 import { useSearchParams } from "next/navigation";
 
+import { useTheme } from "@/hooks/useTheme";
+import { HeroCardSkeleton } from "@/components/ui/HeroCardSkeleton";
+
 type SortKey = "name" | "alignment" | "publisher";
 
 export default function RootPage() {
@@ -20,11 +23,14 @@ export default function RootPage() {
     showFavorites: false,
     publisher: "",
     sort: "name" as SortKey,
+    favoritesPage: 1,
   });
 
   const { favorites } = useFavorites();
   const { compare, toggle, clear, isComparing } = useCompare();
   const { data, isLoading, heroes } = useHeroes(state, favorites);
+
+  const { theme, toggleTheme } = useTheme();
 
   const searchParams = useSearchParams();
 
@@ -42,7 +48,7 @@ export default function RootPage() {
 
   useEffect(() => {
     const fav = searchParams.get("favorites");
-  
+
     if (fav === "true") {
       setState((s) => ({
         ...s,
@@ -52,32 +58,49 @@ export default function RootPage() {
   }, [searchParams]);
 
   if (isLoading && !data) {
-    return <p className="text-center mt-10">Loading...</p>;
+    return (
+      <main className="min-h-screen bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-8">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <HeroCardSkeleton key={i} />
+          ))}
+        </div>
+      </main>
+    );
   }
 
   if (!data) {
     return <p className="text-center mt-10">No data</p>;
   }
 
+  const FAVORITES_LIMIT = 10;
+
+  const visibleHeroes = state.showFavorites
+    ? heroes.slice(
+        (state.favoritesPage - 1) * FAVORITES_LIMIT,
+        state.favoritesPage * FAVORITES_LIMIT
+      )
+    : heroes;
+
   return (
-    <main className="min-h-screen bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-8 text-slate-100 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-gray-50 dark:bg-linear-to-br dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 px-4 py-8 text-black dark:text-slate-100 sm:px-6 sm:py-10">
       <section className="mx-auto w-full max-w-7xl space-y-6">
         <header className="space-y-2">
-          <span className="inline-flex rounded-full border border-indigo-300/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-200">
+          <span className="inline-flex rounded-full border border-indigo-300/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-300">
             SuperHeroApi
           </span>
 
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
             Heroes
           </h1>
 
-          <p className="text-sm text-slate-300 sm:text-base">
+          <p className="text-sm text-gray-600 dark:text-slate-300 sm:text-base">
             Choose a hero to view the complete profile page.
           </p>
 
-          <div className="flex gap-4 mt-4">
+          <div className="flex flex-wrap gap-3 mt-4">
             <input
-              className="w-full rounded-lg bg-slate-800 p-2"
+              className="flex-1 min-w-[180px] rounded-xl bg-white text-gray-800 dark:bg-slate-800 dark:text-white px-3 py-2 border border-gray-300 dark:border-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               placeholder="Buscar herói..."
               value={state.searchInput}
               onChange={(e) =>
@@ -97,23 +120,27 @@ export default function RootPage() {
                   publisher: "",
                 }))
               }
-              className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition whitespace-nowrap
-                ${
-                  state.showFavorites
-                    ? "border-yellow-400/50 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
-                    : "border-slate-700 bg-slate-800 text-slate-300 hover:border-yellow-400/30 hover:text-yellow-300"
-                }`}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 shadow-sm
+        ${
+          state.showFavorites
+            ? "bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200 shadow-yellow-200/50 dark:bg-yellow-400/10 dark:text-yellow-300 dark:border-yellow-400/30 dark:hover:bg-yellow-400/20"
+            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 hover:shadow-md dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:border-yellow-400/30 dark:hover:text-yellow-300"
+        }`}
             >
               {state.showFavorites ? "★" : "☆"} Favorites
               {favorites.length > 0 && (
-                <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-xs text-yellow-300">
+                <span
+                  className="ml-1 rounded-full px-2 py-0.5 text-xs font-bold
+        bg-yellow-200 text-yellow-800
+        dark:bg-yellow-400/20 dark:text-yellow-300"
+                >
                   {favorites.length}
                 </span>
               )}
             </button>
 
             <select
-              className="rounded-lg bg-slate-800 p-2 text-slate-300"
+              className="rounded-xl bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-300 px-3 py-2 border border-gray-300 dark:border-slate-700 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition"
               value={state.publisher}
               onChange={(e) =>
                 setState((s) => ({
@@ -129,7 +156,7 @@ export default function RootPage() {
             </select>
 
             <select
-              className="rounded-lg bg-slate-800 p-2 text-slate-300"
+              className="rounded-xl bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-300 px-3 py-2 border border-gray-300 dark:border-slate-700 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition"
               value={state.sort}
               onChange={(e) =>
                 setState((s) => ({
@@ -144,7 +171,7 @@ export default function RootPage() {
             </select>
 
             <select
-              className="rounded-lg bg-slate-800 p-2"
+              className="rounded-xl bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-300 px-3 py-2 border border-gray-300 dark:border-slate-700 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition"
               value={state.limit}
               onChange={(e) =>
                 setState((s) => ({
@@ -157,6 +184,13 @@ export default function RootPage() {
               <option value={20}>20</option>
               <option value={50}>50</option>
             </select>
+
+            <button
+              onClick={toggleTheme}
+              className="rounded-xl px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm transition dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
+            >
+              {theme === "dark" ? "🌙" : "☀️"}
+            </button>
           </div>
         </header>
 
@@ -186,11 +220,11 @@ export default function RootPage() {
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {heroes.map((hero) => (
+          {visibleHeroes.map((hero) => (
             <Link
               key={hero.id}
               href={`/hero/${hero.slug}?favorites=${state.showFavorites}`}
-              className="group rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-lg transition hover:border-indigo-400/40 hover:bg-slate-900"
+              className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/40 dark:hover:bg-slate-900"
             >
               <div className="flex items-center gap-3">
                 <Image
@@ -198,31 +232,38 @@ export default function RootPage() {
                   alt={`Image of ${hero.name}`}
                   width={72}
                   height={72}
-                  className="h-[72px] w-[72px] rounded-xl border border-slate-700 object-cover"
+                  className="h-[72px] w-[72px] rounded-xl border border-gray-300 dark:border-slate-700 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
 
                 <div className="min-w-0">
-                  <p className="truncate text-lg font-semibold text-white">
+                  <p className="truncate text-lg font-semibold text-gray-900 dark:text-white">
                     {hero.name}
                   </p>
-                  <p className="text-xs text-slate-400">ID: {hero.id}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    ID: {hero.id}
+                  </p>
                 </div>
               </div>
 
-
-              <div className="mt-4 space-y-1 text-sm text-slate-300">
+              <div className="mt-4 space-y-1 text-sm text-gray-600 dark:text-slate-300">
                 <p className="truncate">
-                  <span className="text-slate-400">Publisher:</span>{" "}
+                  <span className="text-gray-500 dark:text-slate-400 font-medium">
+                    Publisher:
+                  </span>{" "}
                   {hero.biography.publisher ?? "Unknown"}
                 </p>
 
                 <p className="truncate">
-                  <span className="text-slate-400">Alignment:</span>{" "}
+                  <span className="text-gray-500 dark:text-slate-400 font-medium">
+                    Alignment:
+                  </span>{" "}
                   {hero.biography.alignment}
                 </p>
 
                 <p className="truncate">
-                  <span className="text-slate-400">Full name:</span>{" "}
+                  <span className="text-gray-500 dark:text-slate-400 font-medium">
+                    Full name:
+                  </span>{" "}
                   {hero.biography.fullName || "Unknown secret identity"}
                 </p>
               </div>
@@ -232,19 +273,18 @@ export default function RootPage() {
                   e.preventDefault();
                   toggle(hero);
                 }}
-                className={`mt-3 w-full rounded-lg border px-3 py-2 text-xs font-medium transition-all duration-200
-             ${
-               isComparing(hero.id)
-                 ? "border-red-400/40 bg-red-400/10 text-red-300 hover:bg-red-400/20"
-                 : "border-indigo-400/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-400"
-             }`}
+                className={`mt-4 w-full rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200 shadow-sm
+              ${
+                isComparing(hero.id)
+                  ? "border-red-300 bg-red-100 text-red-700 hover:bg-red-200 dark:border-red-400/40 dark:bg-red-400/10 dark:text-red-300 dark:hover:bg-red-400/20"
+                  : "border-indigo-300 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:border-indigo-400/40 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+              }`}
               >
                 {isComparing(hero.id) ? "Remover da comparação" : "Comparar"}
               </button>
             </Link>
           ))}
         </div>
-
 
         {!state.showFavorites && (
           <>
@@ -254,15 +294,13 @@ export default function RootPage() {
               heróis
             </p>
 
-            <div className="flex flex-wrap justify-center gap-2 pt-4">
+            <div className="flex flex-wrap justify-center items-center gap-2 pt-6">
               <button
                 onClick={() =>
-                  setState((s) => ({
-                    ...s,
-                    page: Math.max(1, s.page - 1),
-                  }))
+                  setState((s) => ({ ...s, page: Math.max(1, s.page - 1) }))
                 }
                 disabled={state.page === 1}
+                className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 ←
               </button>
@@ -276,6 +314,12 @@ export default function RootPage() {
                   <button
                     key={p}
                     onClick={() => setState((s) => ({ ...s, page: p }))}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition shadow-sm
+                    ${
+                      p === state.page
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
+                    }`}
                   >
                     {p}
                   </button>
@@ -289,6 +333,76 @@ export default function RootPage() {
                   }))
                 }
                 disabled={state.page === data.totalPages}
+                className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                →
+              </button>
+            </div>
+          </>
+        )}
+
+        {state.showFavorites && (
+          <>
+            <div className="flex flex-wrap justify-center items-center gap-2 pt-6">
+              <button
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    favoritesPage: Math.max(1, s.favoritesPage - 1),
+                  }))
+                }
+                disabled={state.favoritesPage === 1}
+                className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                ←
+              </button>
+
+              {Array.from(
+                { length: Math.ceil(heroes.length / FAVORITES_LIMIT) },
+                (_, i) => i + 1
+              )
+                .slice(
+                  Math.max(0, state.favoritesPage - 3),
+                  Math.min(
+                    Math.ceil(heroes.length / FAVORITES_LIMIT),
+                    state.favoritesPage + 2
+                  )
+                )
+                .map((p) => (
+                  <button
+                    key={p}
+                    onClick={() =>
+                      setState((s) => ({
+                        ...s,
+                        favoritesPage: p,
+                      }))
+                    }
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition shadow-sm
+              ${
+                p === state.favoritesPage
+                  ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
+              }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+
+              <button
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    favoritesPage: Math.min(
+                      Math.ceil(heroes.length / FAVORITES_LIMIT),
+                      s.favoritesPage + 1
+                    ),
+                  }))
+                }
+                disabled={
+                  state.favoritesPage ===
+                  Math.ceil(heroes.length / FAVORITES_LIMIT)
+                }
+                className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 →
               </button>
