@@ -31,6 +31,7 @@ export default async function RootPage({ params, searchParams }: Props) {
 		{ label: "Power", value: hero.powerstats.power, color: "bg-indigo-400" },
 		{ label: "Combat", value: hero.powerstats.combat, color: "bg-purple-400" },
 	] as const;
+	
 
 	const averagePower = Math.round(
 		stats.reduce((total, stat) => total + stat.value, 0) / stats.length,

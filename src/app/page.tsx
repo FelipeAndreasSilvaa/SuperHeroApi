@@ -12,7 +12,8 @@ import { useSearchParams } from "next/navigation";
 import { useTheme } from "@/hooks/useTheme";
 import { HeroCardSkeleton } from "@/components/ui/HeroCardSkeleton";
 
-type SortKey = "name" | "alignment" | "publisher";
+type SortKey = "name" | "alignment" | "publisher" | "id";
+
 
 export default function RootPage() {
   const [state, setState] = useState({
@@ -24,6 +25,7 @@ export default function RootPage() {
     publisher: "",
     sort: "name" as SortKey,
     favoritesPage: 1,
+    direction: "asc" as "asc" | "desc",
   });
 
   const { favorites } = useFavorites();
@@ -121,18 +123,18 @@ export default function RootPage() {
                 }))
               }
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 shadow-sm
-        ${
-          state.showFavorites
-            ? "bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200 shadow-yellow-200/50 dark:bg-yellow-400/10 dark:text-yellow-300 dark:border-yellow-400/30 dark:hover:bg-yellow-400/20"
-            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 hover:shadow-md dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:border-yellow-400/30 dark:hover:text-yellow-300"
-        }`}
-            >
+              ${
+                state.showFavorites
+                  ? "bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200 shadow-yellow-200/50 dark:bg-yellow-400/10 dark:text-yellow-300 dark:border-yellow-400/30 dark:hover:bg-yellow-400/20"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 hover:shadow-md dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:border-yellow-400/30 dark:hover:text-yellow-300"
+              }`}
+                  >
               {state.showFavorites ? "★" : "☆"} Favorites
               {favorites.length > 0 && (
                 <span
                   className="ml-1 rounded-full px-2 py-0.5 text-xs font-bold
-        bg-yellow-200 text-yellow-800
-        dark:bg-yellow-400/20 dark:text-yellow-300"
+                bg-yellow-200 text-yellow-800
+                dark:bg-yellow-400/20 dark:text-yellow-300"
                 >
                   {favorites.length}
                 </span>
@@ -168,6 +170,21 @@ export default function RootPage() {
               <option value="name">Name</option>
               <option value="alignment">Alignment</option>
               <option value="publisher">Publisher</option>
+              <option value="id">ID</option>
+            </select>
+
+            <select
+              className="rounded-xl bg-white text-gray-800 dark:bg-slate-800 dark:text-slate-300 px-3 py-2 border border-gray-300 dark:border-slate-700 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition"
+              value={state.direction}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  direction: e.target.value as "asc" | "desc",
+                }))
+              }
+            >
+              <option value="asc">Asc ↑</option>
+              <option value="desc">Desc ↓</option>
             </select>
 
             <select
@@ -183,6 +200,7 @@ export default function RootPage() {
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
+              <option value={100}>100</option>
             </select>
 
             <button

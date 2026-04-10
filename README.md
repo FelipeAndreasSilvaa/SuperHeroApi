@@ -113,6 +113,24 @@ A ordenação usa `localeCompare` para garantir comparação correta de strings.
 
 **Como testar:** Mude a opção de ordenação e observe a ordem dos cards se reorganizar.
 
+#### Ordenação com direção (Asc/Desc)
+
+Foi implementado um controle adicional de direção de ordenação, permitindo ao usuário escolher entre ordem crescente (**Asc**) e decrescente (**Desc**).
+
+A funcionalidade funciona em conjunto com o select de ordenação já existente, permitindo combinações como:
+
+* Name + Asc → ordem alfabética (A → Z)
+* Name + Desc → ordem reversa (Z → A)
+* ID + Asc → menor para maior
+* ID + Desc → maior para menor
+
+A lógica foi implementada no hook `useHeroes.ts`, invertendo o resultado da comparação quando a direção é `"desc"`.
+
+Também foi adicionada a opção de ordenação por **ID**, ampliando as possibilidades de organização dos dados.
+
+**Como testar:** Selecione um tipo de ordenação (ex: Name ou ID) e altere o select de direção para "Asc" ou "Desc". A lista será reordenada automaticamente.
+
+
 ---
 
 ### 4. Botão de favorito no perfil do herói
