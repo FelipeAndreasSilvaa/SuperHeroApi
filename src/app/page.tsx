@@ -195,14 +195,22 @@ export default function RootPage() {
         </header>
 
         {compare.length === 2 && (
-          <div className="bg-slate-800 p-4 rounded-xl">
-            <h2 className="text-lg font-bold mb-4">Comparação de Heróis</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              {compare.map((hero) => (
-                <div key={hero.id} className="bg-slate-900 p-4 rounded">
-                  <p className="font-semibold">{hero.name}</p>
-
+          <div className="bg-gray-100 dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
+          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
+            Comparação de Heróis
+          </h2>
+        
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {compare.map((hero) => (
+              <div
+                key={hero.id}
+                className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm"
+              >
+                <p className="font-semibold text-gray-900 dark:text-white mb-2">
+                  {hero.name}
+                </p>
+        
+                <div className="space-y-1 text-sm text-gray-700 dark:text-slate-300">
                   <p>🧠 Intelligence: {hero.powerstats.intelligence}</p>
                   <p>💪 Strength: {hero.powerstats.strength}</p>
                   <p>⚡ Speed: {hero.powerstats.speed}</p>
@@ -210,13 +218,17 @@ export default function RootPage() {
                   <p>🔥 Power: {hero.powerstats.power}</p>
                   <p>🥊 Combat: {hero.powerstats.combat}</p>
                 </div>
-              ))}
-            </div>
-
-            <button onClick={clear} className="mt-3 text-red-400">
-              Limpar comparação
-            </button>
+              </div>
+            ))}
           </div>
+        
+          <button
+            onClick={clear}
+            className="mt-4 text-red-500 hover:text-red-600 font-medium transition"
+          >
+            Limpar comparação
+          </button>
+        </div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
